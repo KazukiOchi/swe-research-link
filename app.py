@@ -170,6 +170,7 @@ st.markdown("""
 
 st.title("🧬 Research↔Link")
 st.caption("Discover the missing link between research topics in Computer Science.")
+st.caption("The latest data is up to 2020/05.")
 
 DEVICE_OPT = "cuda" if torch.cuda.is_available() else "cpu"
 TAU_FIXED = 1.57
