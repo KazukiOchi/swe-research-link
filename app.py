@@ -107,24 +107,28 @@ def load_data(device_name="cpu"):
 
     num_nodes = graph['num_nodes']
     edge_index = graph['edge_index']
-
+    
     src, dst = edge_index[0], edge_index[1]
+
+    # 1. 引用エッジ (Citing): src -> dst (重み 1.0)
+    w_citing = np.ones(len(src), dtype=np.float32) * 1.0
+
+    # 2. 被引用エッジ (Cited by): dst -> src (重み 2.0)
+    w_cited_by = np.ones(len(src), dtype=np.float32) * 2.0
+
+    # 配列の結合
     u_list = np.concatenate([src, dst])
     v_list = np.concatenate([dst, src])
-    edges = np.stack([u_list, v_list], axis=1)
-    edges = np.unique(edges, axis=0)
-    mask = edges[:, 0] != edges[:, 1]
-    edges = edges[mask]
+    w_list = np.concatenate([w_citing, w_cited_by])
 
-    edges_u = torch.tensor(edges[:, 0], dtype=torch.long, device=device)
-    edges_v = torch.tensor(edges[:, 1], dtype=torch.long, device=device)
-    
-    num_edges = edges_u.shape[0]
-    weights = torch.ones(num_edges, dtype=torch.float32, device=device)
+    # Tensor化
+    edges_u = torch.tensor(u_list, dtype=torch.long, device=device)
+    edges_v = torch.tensor(v_list, dtype=torch.long, device=device)
+    weights = torch.tensor(w_list, dtype=torch.float32, device=device)
     weights *= 0.5
     deg = torch.zeros(num_nodes, dtype=torch.float32, device=device)
     deg.index_add_(0, edges_u, weights)
-    deg.index_add_(0, edges_v, weights)
+
     inv_sqrt_deg = 1.0 / torch.sqrt(deg + 1e-8)
 
     graph_data = (num_nodes, edges_u, edges_v, weights, inv_sqrt_deg, deg)
