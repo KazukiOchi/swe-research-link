@@ -129,7 +129,7 @@ def load_data(device_name="cpu"):
     weights *= 0.5
     deg = torch.zeros(num_nodes, dtype=torch.float32, device=device)
     deg.index_add_(0, edges_u, weights)
-
+    deg.index_add_(0, edges_v, weights) 
     inv_sqrt_deg = 1.0 / torch.sqrt(deg + 1e-8)
 
     graph_data = (num_nodes, edges_u, edges_v, weights, inv_sqrt_deg, deg)
