@@ -54,7 +54,7 @@ def compute_synergy(query_nodes, num_nodes, tau, edges_u, edges_v, weights, inv_
     if Q == 0: return None
 
     # 初期状態
-    psi0_multi = torch.zeros((num_nodes, Q), dtype=torch.cfloat, device=device)
+    psi0_multi = torch.zeros((num_nodes, Q), dtype=torch.cdouble, device=device)
     for col, nid in enumerate(query_nodes):
         if 0 <= nid < num_nodes:
             psi0_multi[nid, col] = 1.0 + 0j
