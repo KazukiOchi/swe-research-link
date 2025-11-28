@@ -63,7 +63,7 @@ def compute_synergy(query_nodes, num_nodes, tau, edges_u, edges_v, weights, inv_
     psi_multi = swe_propagate(psi0_multi, tau, edges_u, edges_v, weights, inv_sqrt_deg, deg, taylor_order)
 
     # 2. 個別の確率密度 |ψ_k|^2
-    probs_each = psi_multi.abs().pow(2).float()
+    probs_each = psi_multi.abs().pow(2).double()
 
     # --- Case A: Single Query (単独検索) ---
     if Q == 1:
@@ -73,15 +73,16 @@ def compute_synergy(query_nodes, num_nodes, tau, edges_u, edges_v, weights, inv_
     # --- Case B: Multi Query (シナジー探索) ---
     # Coherent sum (合成波): ψ_all = (1/√Q) Σ ψ_k
     psi_all = (1.0 / math.sqrt(Q)) * psi_multi.sum(dim=1)
-    prob_all = psi_all.abs().pow(2).float() # |ψ_all|^2
+    prob_all = psi_all.abs().pow(2).double() # |ψ_all|^2
 
     # Incoherent sum (非干渉和): mean(|ψ_k|^2)
-    # エネルギー保存の観点から、Coherent側(1/√Q係数)と比較するには平均をとるのが適切
-    probs_mean = probs_each.mean(dim=1)
+    power_sum = probs_each.sum(dim=1)
 
-    # Synergy = (干渉した結果の確率) - (単独の確率の平均)
-    # 正であれば「強め合い」、負であれば「弱め合い」
-    return prob_all - probs_mean
+    #   synergy_true = |Σ ψ_k|^2 - Σ |ψ_k|^2
+    #   ただし ψ_all = (1/√Q) Σ ψ_k なので |Σ ψ_k|^2 = Q * |ψ_all|^2
+    synergy_full = Q * prob_all - power_sum                # (N,)
+
+    return synergy_full
 
 # ==========================================
 # 2. Data Loading
